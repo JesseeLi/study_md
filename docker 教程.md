@@ -148,7 +148,38 @@ docker container run -d -publish 80:80 --name webhost nginx
 - ENTRYPOINT 也可以设置容器启动时要执行的命令，可以在docker container run 时传入其它命令
 - ENTRYPOINT 和 CMD 可以联合使用，ENTRYPOINT 设置执行的命令，CMD传递参数
 
+##### USER	指定当前用户
+- 格式：USER <用户名>[:<用户组>]
+- USER 指令和 WORKDIR 相似，都是`改变环境状态并影响以后的层`。注意，USER 只是切换到指定用户，这个用户必须是事先建立好的，否则无法切换。
+- 如果以 root 执行的脚本，在执行期间希望改变身份，比如希望以某个已经建立好的用户来运行某个服务进程，不建议使用 su 或者 sudo，建议使用 [`gosu`](https://github.com/tianon/gosu)。
+
+
 ##### VOLUME	定义匿名卷
 
 - 容器运行时应该尽量保持容器存储层不发生写操作，对于数据库类需要保存动态数据的应用，其数据库文件应该保存于卷(volume)中。
+
+
+#### Dockerfile 技巧
+
+##### 合理使用缓存
+
+- 容易改变的内容尽量放到后面，不容易发生改变的放到前面（例如一些 RUN、WORKDIR、ENV 等）。例如 COPY 等，文件一旦变动，这之后的命令需要重新构建不能走缓存
+
+##### build context 优化
+
+- 例如 [docker image build -t flask-demo .]。最后这个点就叫做 build context。是指 build 期间，我们要传输的一个目录或文件，如果这个目录下包含很多文件会导致 build context 特别大
+
+- 配置 .dockerignore 文件，忽略一些不必要的文件。类似 gitignore 
+
+##### 多阶段构建
+
+- 在一个 Dockerfile 里写多个构建过程。 使用 AS 将前置镜像起一个别名，前置镜像编译后的文件， 使用 COPY --from=别名 前置镜像内文件 当前镜像文件
+
+##### 尽量使用非 root 用户
+
+- root 的危险性
+
+- 使用 groupadd 和 useradd 创建非 root 用户
+
+### Docker 的存储
 
