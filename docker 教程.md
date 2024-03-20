@@ -346,3 +346,69 @@ Docker compose 的环境变量。可以通过创建默认的 .env 文件来生�
 
 https://github.com/docker/awesome-compose 里面非常多的docker-compose example
 https://github.com/dockersamples/example-voting-app 投票app
+
+### Docker Swarm
+
+#### swarm 单节点快速上手
+
+- 使用 docker info 查看有没有激活 docker swarm。默认没有激活（swarm：inactive）。激活单节点 dcoker swarm init
+  - init 背后。主要是 PKI 和 安全 相关的自动化 1.创建swarm集群根证书 2.manager节点的证书 3.其他节点加入集群需要的tokens 。创建 Raft 数据库用于存储证书、配置和密码等数据
+  - [Raft资料1](http://thesecretlivesofdata.com/raft/) [Raft docker_hub](https://docs.docker.com/engine/swarm/raft/)
+  - 如果你的 Docker 主机有多个网卡，拥有多个 IP，必须使用 `--advertise-addr` 指定 IP。
+- docker node ls	查看当前所有节点
+- docker swarm leave	离开集群
+- docker service create [镜像]	创建服务
+  - --network	指定需要使用的网络（一般类型为 overlay 的网络）
+  - --replicas	
+  - --name
+  - -p	端口映射
+  - --secret	指定要使用的secret(secret文件保存在容器内 /run/secrets/ 下)
+  
+- docker service ls	查看当前集群运行的服务
+- docker service rm	删除服务
+- docker service ps [服务ID] 查看某个服务的详情
+- docker service update [服务ID] --replicas 3	设置该服务下扩展3个容器数量。（容器退出会自动启动容器，保证正常3个容器启动）
+
+
+#### swarm 多节点
+
+- 命令只能在 manager 节点上运行
+- docker swarm join --token		增加工作节点
+- docker service scale nginx=5		服务伸缩，扩展nginx容器为5个，也可以减少
+- docker service logs		查看某个服务的日志。可以显示多个节点的日志
+
+#### swarm 的 overlay 网络
+
+<img src="./image/swarm-overlay.webp" alt="swarm-overlay" style="zoom:50%;" />
+
+- 使用 swarm 时，会出现 overlay 类型的网络。manager 创建网络会同步到所有节点上。
+- 容器会链接两个网络，一个 overlay 网络，一个 bridge 网络（容器在当前机器对外通信时的网络）。两个不同节点上容器间通信 需要通过 overlay 网络进行通信
+- 第一是外部如何访问部署运行在swarm集群内的服务，可以称之为 `入方向` 流量，在swarm里我们通过 `ingress` 来解决
+- 第二是部署在swarm集群里的服务，如何对外进行访问，这部分又分为两块:
+  - 第一，`东西向流量` ，也就是不同swarm节点上的容器之间如何通信，swarm通过 `overlay` 网络来解决；
+  - 第二，`南北向流量` ，也就是swarm集群里的容器如何对外访问，比如互联网，这个是 `Linux bridge + iptables NAT` 来解决的
+- Tcpdump 抓包
+
+
+
+- Ingress 网络
+- docker swarm的ingress网络又叫 `Ingress Routing Mesh` 主要是为了实现把service的服务端口对外发布出去，让其能够被外部网络访问到。
+  - iptables的 Destination NAT流量转发
+  - Linux bridge, network namespace
+  - 使用IPVS技术做负载均衡
+  - 包括容器间的通信（overlay）和入方向流量的端口转发
+- 
+
+#### swarm 的部署
+部署服务使用 docker stack deploy，其中 -c 参数指定 compose 文件名。
+
+- docker stack ls	查看服务
+- docker stack down	移除服务
+
+
+
+- docker secret create [名称]	
+  - 例如：openssl rand -base64 20 | docker secret create mysql_password -	以管道符的形式创建 secret
+  - 例如：docker secret create mysql_pass.txt	以文件形式创建
+- docker secret ls	查看秘钥
+- docker secret inspect [秘钥名]	秘钥的详细
