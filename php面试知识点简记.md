@@ -49,18 +49,33 @@
 
 
 4. 优化MySQL
-      sql语句优化
+      sql语句优化，减少请求的数据量
       添加索引、索引的优化
       数据库表结构的优化
       配置优化
       硬件优化
 
-5.  索引
-    create index 索引名称 on table_name(key1,key2)
-    主键索引
-    唯一索引
-    联合索引
-    普通索引
+5. 索引
+      普通索引	create index `index_name` on table_name(key1)
+      唯一索引	create unique index `index_name` on table_name(key1)
+      全文索引	create fulltext index `index_name` on table_name(key1)
+      主键索引
+      联合索引	create index `index_name` on table_name(key1,key2)
+
+6. 索引失效
+
+      `对索引使用左或者左右模糊匹配` like %xx 或者 like %xx%, 都会造成索引失效
+
+      `对索引使用函数`（mysql 8.0 添加了函数索引，可以实现【和普通索引一样，只不过索引的字段是 使用函数后的字段 alter table t_user add key idx_name_length ((length(name)))】）
+
+      `对索引进行表达式计算`
+
+      `对索引进行隐式类型转换`
+
+      `联合索引非最左匹配`。（创建了一个 (a, b, c) 联合索引，where a = 1; where a=1 and b=2 and c=3；where a=1 and b=2；这些都能生效。非 a 开头就都失败了。 where a = 1 and c = 3  索引截断， ）
+
+      `where 子句中的 or, 两边都得是 索引字段`
+
 
 #### 四、Redis
 
@@ -174,9 +189,9 @@
       $channel->set_ack_handler()             推送成功事件
       $channel->set_nack_handler()            推送失败事件
 
-
    三、将 交换机、队列、消息 都持久化后。消息就不会丢失吗
    否定的，还会丢失
+
    1. 从消费端 consumer 。 如果 ack 为 自动应答时，消息没来及处理就 crash（崩溃）掉了，数据就丢失了。      解决方案：手动 ack
    2. 从生产端 producer 。 如果放入队列的时候 crash 了，消息就丢失了。     解决方案：引入事务机制 或者 confirm机制 来确保消息已经发送到mq了
    3. 消息正确存入 mq 后，持久化还需要一段时间保存到磁盘内，如果此时 mq crash 了，消息也会丢失。           解决方案：镜像队列 ？
