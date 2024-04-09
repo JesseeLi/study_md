@@ -15,12 +15,12 @@
 - __destruct
 - __invoke       引入这个之后，实例化对象之后可以当做函数执行调用
 
-   #### 二、抽象类和接口
+#### 二、抽象类和接口
 - abstract   抽象类，只要类内存在abstract，就是抽象类，类前就得加abstract， 抽象方法不能实现具体功能和接口一样
 
 - interface  接口 通过implements继承，必须实现接口内所有方法，还能定义常量 
 
-  ####  三、mysql
+####  三、mysql
 1. 存储引擎
       MyiSAM  查询快，写入慢，不支持事务
       InnoDB  支持事务
@@ -75,6 +75,15 @@
       `联合索引非最左匹配`。（创建了一个 (a, b, c) 联合索引，where a = 1; where a=1 and b=2 and c=3；where a=1 and b=2；这些都能生效。非 a 开头就都失败了。 where a = 1 and c = 3  索引截断， ）
 
       `where 子句中的 or, 两边都得是 索引字段`
+
+7. in 和 exists 的区别
+
+- 1.select * from A where id in(select id from B) 2.select a.* from A a where exists(select 1 from B b where a.id=b.id)
+
+- in 语句是把 外表 和 内表 做 join 链接，而 exists 语句是对 外表 做 nest loop 循环，每次循环再对 内表 进行查询
+- 外层查询表小于子查询表（where），则用 `exists`，外层查询表大于子查询表（where），则用 `in` ，如果外层和子查询表差不多，则那个都行。
+- `in` 查询的子条件返回结果必须只有一个字段。`exists` 的条件就像一个 `bool` 条件，当能返回结果集则为 `true`，不能返回结果集则为 `false`。
+- `not in` 内外表都进行全表扫描，没有用到索引。而 `not exists` 的子查询依然能用到表上的索引。
 
 
 #### 四、Redis
