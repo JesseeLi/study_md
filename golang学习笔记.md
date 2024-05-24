@@ -52,7 +52,7 @@
 - 整数类型
 	- **uint**、 uint8（0到255）、 uint16（0到65535）、 uint32、 uint64
 	- **int**、 int8（-128到127）、 int16（-32768到32767）、 int32、 int64
-	- byte（需要字节存储时才会用到，一般是 字节组成的数组）
+	- byte（本质`uint8`别名,需要字节存储时才会用到，一般是 字节组成的数组`[]byte`）
 	- rune（等价于 int32 ，存储一个unicode编码）
 	
 - 浮点类型
@@ -70,28 +70,31 @@
 
 - 结构体 struct
 - 接口 interface
-- 数组 [数组长度]值类型{值1,值2,值3}
-- 切片 slice []值类型{值1,值2,值3}
+- 数组（值传递） [数组长度]值类型{值1,值2,值3}
+- 切片（引用传递） slice []值类型{值1,值2,值3}
 - map [key类型]值类型{key:值}
 - 指针 *
 - 函数 func
 - 管道 chan
 
-
 判断数据类型，使用fmt.Printf("%T",变量或值)
 数据类型转换
 
-- string到int
+- `string到int`
 	- int,err = strconv.Atoi(string)
-- string到int64
+- `string到int64`
 	- int64,err = strconv.ParseInt(string,10,64)
-- int到string
+- `int到string`
 	- string,err = strconv.Itoa(int)
-- int64到string
+- `int64到string`
 	- string,err = strconv.FormatInt(int64,10)
-- string到float32/float64
+- `string到float32/float64`
 	- float32,err = ParseFloat(string,32)
 	- float64,err = ParseFloat(string,64)
+- `[]byte`是一个**字节切片**,可以和字符串相互转换
+  - byteSlice := []byte("aaaa")	将字符串转换为字节切片
+  - newStr := string(byteSlice)	将字节切片转换为字符串
+
 
 #####  **3. 流程控制语句**
 
